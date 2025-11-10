@@ -11,7 +11,6 @@ def render(df, ano, rocket_palette):
 
     st.write(f"Esta seção apresenta uma análise dos acidentes de trânsito no Pará para o ano de {ano}, categorizados por diferentes períodos.")
     
-    # Gráfico de Acidentes por Mês
     st.subheader(f"Acidentes por Mês ({ano})")
     if 'data_inversa' in df.columns:
         try:
@@ -25,7 +24,6 @@ def render(df, ano, rocket_palette):
                 1: "Jan", 2: "Fev", 3: "Mar", 4: "Abr", 5: "Mai", 6: "Jun",
                 7: "Jul", 8: "Ago", 9: "Set", 10: "Out", 11: "Nov", 12: "Dez"
             }
-            # Garante que todos os 12 meses apareçam na ordem correta
             acidentes_por_mes = acidentes_por_mes.set_index('mes').reindex(range(1, 13)).reset_index()
             acidentes_por_mes['Mês'] = acidentes_por_mes['mes'].map(meses_pt)
             acidentes_por_mes = acidentes_por_mes.fillna(0)
@@ -40,7 +38,6 @@ def render(df, ano, rocket_palette):
     else:
         st.warning("Coluna 'data_inversa' não encontrada para análise por mês.")
 
-    # Gráfico de Acidentes por Dia da Semana
     st.subheader(f"Acidentes por Dia da Semana ({ano})")
     if 'dia_semana' in df.columns:
         dias_ordem = ['segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado', 'domingo']

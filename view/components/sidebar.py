@@ -1,4 +1,3 @@
-# Crie este arquivo em: components/sidebar.py
 
 import streamlit as st
 from streamlit_option_menu import option_menu
@@ -40,7 +39,6 @@ def render_sidebar():
 
         controller = AcidenteController()
         
-        # Só mostra o seletor de ano se a página NÃO for Home ou Upload
         if selected_page not in ["Home", "Análise de dados"]:
             bancos_de_dados = controller.listar_bancos_de_dados()
             
@@ -57,7 +55,6 @@ def render_sidebar():
                     df = controller.listar_dados_por_banco(nome_banco_selecionado)
                     ano_selecionado = re.search(r'\d{4}', nome_banco_selecionado).group(0) if re.search(r'\d{4}', nome_banco_selecionado) else "Ano Desconhecido"
 
-    # Paleta de cores
     rocket_palette = [
         "#160141", "#260446", "#3A0453", "#66135C", "#792860", "#A53950", "#a54848", "#A06444", "#9E7E42", "#AC973C"
     ]

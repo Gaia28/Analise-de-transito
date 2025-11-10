@@ -63,9 +63,8 @@ def render(df, ano, rocket_palette, controller):
     col_esq, col_central, col_dir = st.columns([0.5, 5, 0.5])
     with col_central:
         if 'causa_acidente' in df.columns:
-            # Usando o método do controller para pegar o top N (ex: top 15)
             causa_acidente = controller.get_dados_agrupados(df, 'causa_acidente', top_n=15)
-            causa_acidente.columns = ['Causa do Acidente', 'Número de Casos'] # Renomeia para o gráfico
+            causa_acidente.columns = ['Causa do Acidente', 'Número de Casos'] 
 
             fig = px.treemap(
                 causa_acidente, path=['Causa do Acidente'], values='Número de Casos',
