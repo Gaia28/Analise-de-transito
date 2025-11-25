@@ -41,7 +41,6 @@ def tela_visualizacao():
             st.warning("Não foram encontrados dados para o estado do Pará (PA) neste arquivo.")
             return
 
-        # --- MÉTRICAS GERAIS (KPIs) ---
         st.subheader("Visão Geral do Ano")
         metricas = controller.get_metricas_gerais(df)
         col1, col2, col3, col4 = st.columns(4)
@@ -52,7 +51,6 @@ def tela_visualizacao():
 
         st.markdown("---")
 
-        # --- GRÁFICOS ---
         col1, col2 = st.columns(2)
         with col1:
             st.subheader("Top 10 Causas de Acidentes")

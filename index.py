@@ -1,26 +1,34 @@
 import streamlit as st
-from view.telaIncial import tela_inicial
-from view.telaAnalise import tela_analise
-from view.visuzalicao import tela_visualizacao
+from controller.AcidenteController import AcidenteController
+import os
+import re
 
+from view.components.sidebar import render_sidebar
+from view import home_page, upload_page, dashboard_page, municipio_page, classificacao_page, periodo_page
 
 st.set_page_config(
     page_title="Análise de Trânsito PA",
     page_icon="🚦",
-    layout="centered"
+    layout="wide" 
 )
+selected_page, df, ano, palette = render_sidebar()
 
-def main():
-    if "tela" not in st.session_state:
-        st.session_state["tela"] = "inicial"
+controller = AcidenteController()
 
-    if st.session_state["tela"] == "inicial":
-        tela_inicial()
-    elif st.session_state["tela"] == "analise":
-        tela_analise()
-    elif st.session_state["tela"] == "visualizacao":
-        tela_visualizacao()
-        
+if selected_page == "Home":
+    home_page.render()
 
-if __name__ == "__main__":
-    main()
+elif selected_page == "Análise de dados":
+    upload_page.render(controller)
+
+elif selected_page == "Visualização de Dados":
+    dashboard_page.render(df, ano, palette, controller)
+
+elif selected_page == "Acidentes por município":
+    municipio_page.render(df, ano, palette)
+
+elif selected_page == "Classificações":
+    classificacao_page.render(df, ano, palette, controller)
+
+elif selected_page == "Período":
+    periodo_page.render(df, ano, palette)

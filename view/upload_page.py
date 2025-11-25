@@ -1,22 +1,28 @@
 import streamlit as st
-from controller.AcidenteController import AcidenteController
 import os
 
-def tela_analise():
-    with st.sidebar:
-        st.title("Navegação")
-        if st.button("⬅️ Voltar à Tela Inicial"):
-            st.session_state["tela"] = "inicial"
-            st.rerun()
-        if st.button("➡️ Visualização de Dados"):
-            st.session_state["tela"] = "visualizacao"
-            st.rerun()
+def render(controller):
+    st.title("📊 Área de Análise e Carregamento de Dados")
+    st.markdown(
+        """
+        Aqui está disponivel a geração de relatórios. Siga os passos abaixo para fazer sua análise:
+        """
+    )
+    with st.expander(" Como funciona?"):
+        st.info(
+            """
+                1.  **Carregue os Dados:** Nesta tela, você poderá carregar até 3 planilhas
+                    (.csv ou .xlsx) contendo os registros de acidentes.
+                2.  **Geração do Banco:** O sistema irá processar os dados, filtrar pelo Pará (PA)
+                    e salvar um arquivo de banco de dados (`.db`) na pasta `data/` para cada ano.
+                3.  **Visualize as Análises:** Use as outras abas no menu lateral 
+                    (Visualização de Dados, Municípios, etc.) para ver os gráficos.
+            """
+        )
 
-        st.info("Carregue as planilhas para análise. Um banco de dados será criado para cada ano.")
-
-    st.title("📊 Área de Análise de Acidentes")
-    st.header("1. Carregamento dos Dados")
-    st.info("O nome de cada planilha deve conter o ano dos dados (ex: 'dados_2022.csv').")
+    st.info(
+        "Carregue as planilhas para análise. Um banco de dados será criado para cada ano, "
+        "nomeie o arquivo com o ano respectivo (ex: 'dados_2022.csv').")
 
     if 'confirmation_state' not in st.session_state:
         st.session_state.confirmation_state = {}
@@ -25,7 +31,6 @@ def tela_analise():
         st.session_state["uploads"] = [None]
 
     novos_uploads = []
-    controller = AcidenteController()
 
     for i, file in enumerate(st.session_state.get("uploads", [None])):
         uploaded_file = st.file_uploader(
@@ -46,12 +51,12 @@ def tela_analise():
             db_path_esperado = f"data/acidentes_{ano}.db"
             db_existe = os.path.exists(db_path_esperado)
 
-            def processar():
+            def processar_arquivo(arquivo_para_processar):
                 with st.spinner(f"Processando e salvando dados de {ano}..."):
                     try:
-                        df_pa, db_path = controller.processar_planilha(uploaded_file)
+                        df_pa, db_path = controller.processar_planilha(arquivo_para_processar)
                         st.success(f"Sucesso! Dados para o ano de {ano} foram salvos em '{db_path}'.")
-                        with st.expander("Ver amostra dos dados carregados"):
+                        with st.expander("Ver amostra dos dados carregados (UF=PA)"):
                             st.dataframe(df_pa.head())
                     except Exception as e:
                         st.error(e)
@@ -62,28 +67,27 @@ def tela_analise():
                 with col1:
                     if st.button("Sim, sobrescrever", key=f"overwrite_{i}"):
                         st.session_state.confirmation_state[i] = 'overwrite'
-                        st.rerun() 
+                        st.rerun()
                 with col2:
                     if st.button("Não, cancelar", key=f"cancel_{i}"):
                         st.session_state.confirmation_state[i] = 'cancel'
-                        st.rerun() 
+                        st.rerun()
+            
             elif st.session_state.confirmation_state.get(i) == 'overwrite':
-                processar()
-                st.session_state.confirmation_state[i] = 'done' 
+                processar_arquivo(uploaded_file)
+                st.session_state.confirmation_state[i] = 'done'
             
             elif st.session_state.confirmation_state.get(i) == 'cancel':
                 st.info(f"Operação para o arquivo '{uploaded_file.name}' cancelada.")
-                st.session_state.confirmation_state[i] = 'done' 
-
-     
+                st.session_state.confirmation_state[i] = 'done'
+            
             elif not db_existe:
-                 processar()
-
+                 processar_arquivo(uploaded_file)
+                 st.session_state.confirmation_state[i] = 'done'
 
     for i in list(st.session_state.confirmation_state.keys()):
         if i >= len(novos_uploads) or novos_uploads[i] is None:
             del st.session_state.confirmation_state[i]
-
 
     if len(st.session_state.get("uploads", [])) > 0 and st.session_state["uploads"][-1] is not None:
         if len(st.session_state["uploads"]) < 3:
