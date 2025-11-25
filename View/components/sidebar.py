@@ -5,23 +5,25 @@ from controller.AcidenteController import AcidenteController
 import pandas as pd
 import re
 
+
 def render_sidebar():
     """
     Renderiza a barra lateral, o menu de navegação e o seletor de banco de dados.
-    
+
     Retorna:
         tuple: (selected_page, df, ano_selecionado, rocket_palette)
     """
-    
+
     df = pd.DataFrame()
     ano_selecionado = "Nenhum"
-    
+
     with st.sidebar:
         selected_page = option_menu(
             menu_title="Projeto Big Data",
             options=["Home", "Análise de dados", "Visualização de Dados",
                      "Acidentes por município", "Classificações", "Período"],
-            icons=["house", "cloud-upload", "bar-chart", "map", "list", "calendar"],
+            icons=["house", "cloud-upload",
+                   "bar-chart", "map", "list", "calendar"],
             menu_icon="cast",
             default_index=0,
             styles={
@@ -38,25 +40,34 @@ def render_sidebar():
         )
 
         controller = AcidenteController()
-        
+
         if selected_page not in ["Home", "Análise de dados"]:
             bancos_de_dados = controller.listar_bancos_de_dados()
-            
+
             if not bancos_de_dados:
-                st.warning("Nenhum banco de dados encontrado. Carregue dados na página 'Análise de dados'.")
+                st.warning(
+                    "Nenhum banco de dados encontrado. Carregue dados na página 'Análise de dados'.")
             else:
                 nome_banco_selecionado = st.selectbox(
                     "Selecione o ano para Análise:",
                     options=bancos_de_dados,
                     format_func=lambda x: f"Analisar {re.search(r'\d{4}', x).group(0) if re.search(r'\d{4}', x) else x}"
                 )
-                
-                if nome_banco_selecionado:
-                    df = controller.listar_dados_por_banco(nome_banco_selecionado)
-                    ano_selecionado = re.search(r'\d{4}', nome_banco_selecionado).group(0) if re.search(r'\d{4}', nome_banco_selecionado) else "Ano Desconhecido"
 
-    rocket_palette = [
-        "#160141", "#260446", "#3A0453", "#66135C", "#792860", "#A53950", "#a54848", "#A06444", "#9E7E42", "#AC973C"
-    ]
-    
+                if nome_banco_selecionado:
+                    df = controller.listar_dados_por_banco(
+                        nome_banco_selecionado)
+                    ano_selecionado = re.search(r'\d{4}', nome_banco_selecionado).group(
+                        0) if re.search(r'\d{4}', nome_banco_selecionado) else "Ano Desconhecido"
+
+    # Paleta de cores utilizada nas páginas (discrete para categorias, continuous para escalas)
+    rocket_palette = {
+        "discrete": [
+            "#160141", "#260446", "#3A0453", "#66135C", "#792860", "#A53950", "#A54848", "#A06444", "#9E7E42", "#AC973C"
+        ],
+        "continuous": [
+            "#160141", "#260446", "#3A0453", "#66135C", "#792860", "#A53950", "#A54848", "#A06444", "#9E7E42", "#AC973C"
+        ]
+    }
+
     return selected_page, df, ano_selecionado, rocket_palette

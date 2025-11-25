@@ -1,12 +1,9 @@
 import pandas as pd
 import re
 import os
-<<<<<<< HEAD
-from Model.AcidenteModel import AcidenteModel
-
-=======
+import logging
 from model.AcidenteModel import AcidenteModel
->>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
+
 
 class AcidenteController:
     def __init__(self):
@@ -23,12 +20,8 @@ class AcidenteController:
         try:
             ano = self.extrair_ano_do_nome(arquivo.name)
             if not ano:
-<<<<<<< HEAD
                 raise Exception(
                     f"Nome de arquivo inválido. O nome '{arquivo.name}' deve conter um ano com 4 dígitos.")
-=======
-                raise Exception(f"Nome de arquivo inválido. O nome '{arquivo.name}' deve conter um ano com 4 dígitos.")
->>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
 
             db_path = f"data/acidentes_{ano}.db"
             model = AcidenteModel(db_path=db_path)
@@ -38,19 +31,12 @@ class AcidenteController:
             else:
                 df = pd.read_excel(arquivo)
 
-<<<<<<< HEAD
             df.columns = [re.sub(r"\s+", "_", str(c).strip().lower())
                           for c in df.columns]
 
             if "uf" not in df.columns:
                 raise Exception(
                     f"A coluna 'uf' é obrigatória e não foi encontrada.")
-=======
-            df.columns = [re.sub(r"\s+", "_", str(c).strip().lower()) for c in df.columns]
-
-            if "uf" not in df.columns:
-                raise Exception(f"A coluna 'uf' é obrigatória e não foi encontrada.")
->>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
 
             df_pa = df[df["uf"].str.upper() == "PA"]
 
@@ -66,17 +52,12 @@ class AcidenteController:
         data_dir = "data"
         if not os.path.exists(data_dir):
             return []
-<<<<<<< HEAD
         files = [f for f in os.listdir(data_dir) if f.endswith(
             ".db") or f.endswith(".csv")]
-=======
-        files = [f for f in os.listdir(data_dir) if f.endswith(".db")]
->>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
         return sorted(files)
 
     def listar_dados_por_banco(self, nome_banco):
         db_path = f"data/{nome_banco}"
-<<<<<<< HEAD
 
         if not os.path.exists(db_path):
             return pd.DataFrame()
@@ -90,35 +71,34 @@ class AcidenteController:
         # Se for CSV → usa pandas direto
         if nome_banco.endswith(".csv"):
             try:
-                # lê o CSV (tenta com ;, se falhar tenta vírgula)
+                # tenta primeiro separador ponto-e-vírgula, depois vírgula
                 try:
                     df = pd.read_csv(db_path, sep=";", encoding="latin1")
                 except Exception:
                     df = pd.read_csv(db_path, sep=",", encoding="latin1")
 
-                # Normaliza nomes para mesmo padrão do .db
+                # normaliza nomes de colunas
                 df.columns = [re.sub(r"\s+", "_", str(c).strip().lower())
                               for c in df.columns]
 
-                # Limpa e valida coordenadas
-                df = self._limpar_coordenadas(df)
+                # garante presença de colunas numéricas chave com conversão segura
+                def _to_int_series(series):
+                    return pd.to_numeric(series.astype(str).str.replace(",", ".").str.replace(" ", ""), errors="coerce").fillna(0).astype(int)
 
-                # garante colunas numéricas chave (mortos, feridos, veiculos, etc)
                 for num_col in ["mortos", "feridos", "feridos_graves", "veiculos", "pessoas"]:
                     if num_col in df.columns:
-                        df[num_col] = pd.to_numeric(df[num_col].astype(str).str.replace(
-                            ",", ".").str.replace(" ", ""), errors="coerce").fillna(0).astype(int)
+                        df[num_col] = _to_int_series(df[num_col])
                     else:
                         df[num_col] = 0
 
-                # filtra apenas PA se coluna uf existir
+                # filtra somente PA se existir coluna uf
                 if "uf" in df.columns:
                     df = df[df["uf"].str.upper() == "PA"]
 
+                # limpeza de coordenadas após filtragem
+                df = self._limpar_coordenadas(df)
                 return df
-
             except Exception as e:
-                import logging
                 logging.exception("Erro ao ler CSV '%s': %s", db_path, e)
                 return pd.DataFrame()
 
@@ -201,21 +181,11 @@ class AcidenteController:
             df = df[df["latitude"].notna() & df["longitude"].notna()]
 
         return df
-=======
-        if not os.path.exists(db_path):
-            return pd.DataFrame()
-        model = AcidenteModel(db_path)
-        return model.listar_por_uf("PA")
->>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
 
     def get_dados_agrupados(self, df, coluna, top_n=10):
         if coluna not in df.columns:
             return pd.DataFrame()
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
         dados = df[coluna].value_counts().nlargest(top_n).reset_index()
         dados.columns = [coluna, 'total_acidentes']
         return dados
@@ -226,18 +196,13 @@ class AcidenteController:
                 "total_acidentes": 0, "total_mortos": 0,
                 "total_feridos_graves": 0, "total_veiculos": 0
             }
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
         metricas = {
             "total_acidentes": len(df),
             "total_mortos": df['mortos'].sum(),
             "total_feridos_graves": df['feridos_graves'].sum(),
             "total_veiculos": df['veiculos'].sum()
         }
-<<<<<<< HEAD
         return metricas
 
     def listar_municipios(self, nome_banco):
@@ -257,14 +222,12 @@ class AcidenteController:
             SELECT 
                 municipio,
                 COUNT(*) AS total_acidentes,
-                SUM(feridos) AS total_feridos,
-                SUM(mortos) AS total_mortos
+                SUM(CASE WHEN feridos_graves IS NOT NULL THEN feridos_graves ELSE 0 END) AS total_feridos_graves,
+                SUM(CASE WHEN mortos IS NOT NULL THEN mortos ELSE 0 END) AS total_mortos,
+                SUM(CASE WHEN veiculos IS NOT NULL THEN veiculos ELSE 0 END) AS total_veiculos
             FROM acidentes
-            WHERE municipio = ?
+            WHERE uf = 'PA' AND municipio = ?
             GROUP BY municipio
         """
 
         return pd.read_sql(query, model.conn, params=(municipio,))
-=======
-        return metricas
->>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a

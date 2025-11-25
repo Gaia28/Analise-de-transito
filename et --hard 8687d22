@@ -1,0 +1,48 @@
+[33md13aa60[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mnovos-graficos-e-alteracoes[m[33m)[m Limpeza: removendo pycache e aplicando .gitignore
+[33m8687d22[m[33m ([m[1;32mminha-alteracao[m[33m, [m[1;32mmaster[m[33m)[m alterações e adição de novos gráficos
+[33mabb12b4[m[33m ([m[1;31morigin/novos-graficos-e-alteracoes[m[33m)[m Merge branch 'Gaia28:main' into main
+[33mf26c08d[m Added Dev Container Folder
+[33maf34eea[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge remote-tracking branch 'refs/remotes/origin/main'
+[33m1051e23[m cache
+[33m346b3b1[m Initialize README with project details and instructions
+[33m0aafde8[m removendo comentarios
+[33m224dac1[m deletando antigo app.py
+[33mf83488e[m nova importação para deploy
+[33m4004aa0[m Novas telas
+[33mcb89485[m correções no app.py para gerar analises com base no banco de dados
+[33me42368b[m Merge pull request #1 from vampsixx/ajustes-keller
+[33m4cd506b[m Melhorias na interface e dashboards  (Streamlit)
+[33m1f812b5[m #
+[33m4084bbc[m #
+[33m59c643b[m #
+[33me38fc55[m #
+[33m92f783d[m #
+[33mdb82d04[m #
+[33m3675f3f[m #
+[33m4cea54b[m #
+[33m6237c35[m #
+[33m9af5bfd[m first commit
+[33md13aa60[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mnovos-graficos-e-alteracoes[m[33m)[m Limpeza: removendo pycache e aplicando .gitignore
+[33m8687d22[m[33m ([m[1;32mminha-alteracao[m[33m, [m[1;32mmaster[m[33m)[m alterações e adição de novos gráficos
+[33mabb12b4[m[33m ([m[1;31morigin/novos-graficos-e-alteracoes[m[33m)[m Merge branch 'Gaia28:main' into main
+[33mf26c08d[m Added Dev Container Folder
+[33maf34eea[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge remote-tracking branch 'refs/remotes/origin/main'
+[33m1051e23[m cache
+[33m346b3b1[m Initialize README with project details and instructions
+[33m0aafde8[m removendo comentarios
+[33m224dac1[m deletando antigo app.py
+[33mf83488e[m nova importação para deploy
+[33m4004aa0[m Novas telas
+[33mcb89485[m correções no app.py para gerar analises com base no banco de dados
+[33me42368b[m Merge pull request #1 from vampsixx/ajustes-keller
+[33m4cd506b[m Melhorias na interface e dashboards  (Streamlit)
+[33m1f812b5[m #
+[33m4084bbc[m #
+[33m59c643b[m #
+[33me38fc55[m #
+[33m92f783d[m #
+[33mdb82d04[m #
+[33m3675f3f[m #
+[33m4cea54b[m #
+[33m6237c35[m #
+[33m9af5bfd[m first commit

@@ -1,51 +1,119 @@
 import streamlit as st
 import plotly.express as px
+import pandas as pd
+
 
 def render(df, ano, rocket_palette, controller):
-    st.title("📈 Dashboard de Visualização")
-    st.markdown("---")
+
+    st.header("📈 Dashboard de Visualização")
+    st.write(
+        f"Esta seção apresenta uma visão geral das métricas e visualizações dos acidentes de trânsito no Pará de ({ano}).")
 
     if df.empty:
-        st.warning("Não há dados para exibir. Selecione um ano na barra lateral ou carregue uma planilha na página 'Análise de dados'.")
+        st.warning(
+            "Não há dados para exibir. Carregue um arquivo na aba Análise de Dados.")
         return
 
-    st.header(f"Análise Detalhada - {ano}")
-    
-    st.subheader("Visão Geral do Ano")
+        # DEBUG: informações básicas para identificar por que o dashboard pode ficar vazio
+        try:
+            nome_banco = st.session_state.get('nome_banco_selecionado')
+        except Exception:
+            nome_banco = None
+        st.caption(
+            f"DEBUG: banco selecionado={nome_banco} | df.shape={getattr(df, 'shape', 'no-df')} | colunas={list(df.columns) if hasattr(df, 'columns') else 'no-df'}")
+
+    st.header("Métricas Gerais do Ano")
+
     metricas = controller.get_metricas_gerais(df)
+
+    media_veiculos = (
+        df["veiculos"].mean() if "veiculos" in df.columns else 0
+    )
+
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total de Acidentes", f"{metricas['total_acidentes']:,}".replace(",", "."))
-    col2.metric("Total de Mortes", f"{metricas['total_mortos']:,}".replace(",", "."))
-    col3.metric("Feridos Graves", f"{metricas['total_feridos_graves']:,}".replace(",", "."))
-    col4.metric("Veículos Envolvidos", f"{metricas['total_veiculos']:,}".replace(",", "."))
+    col1.metric("Total de Acidentes",
+                f"{metricas['total_acidentes']:,}".replace(",", "."))
+    col2.metric("Total de Mortes",
+                f"{metricas['total_mortos']:,}".replace(",", "."))
+    col3.metric("Feridos Graves",
+                f"{metricas['total_feridos_graves']:,}".replace(",", "."))
+    col4.metric("Média de Veículos", f"{media_veiculos:.2f}".replace(".", ","))
+
+    dados_comp = pd.DataFrame({
+        "Indicador": ["Acidentes", "Mortes", "Feridos Graves", "Veículos"],
+        "Valores": [
+            metricas["total_acidentes"],
+            metricas["total_mortos"],
+            metricas["total_feridos_graves"],
+            metricas["total_veiculos"]
+        ]
+    })
+
+    fig_comp = px.bar(
+        dados_comp, x="Indicador", y="Valores",
+        title=f"Comparação Geral de Acidentes ({ano})",
+        text="Valores",
+        color="Indicador",
+        color_discrete_sequence=rocket_palette['discrete'],
+        template="plotly_dark"
+    )
+    fig_comp.update_traces(textposition="outside")
+    st.plotly_chart(fig_comp, use_container_width=True)
 
     st.markdown("---")
+    st.header("Localização dos Acidentes no Pará")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("Top 10 Causas de Acidentes")
-        causas = controller.get_dados_agrupados(df, 'causa_acidente', top_n=10)
-        if not causas.empty:
-            fig_causas = px.bar(
-                causas, x='total_acidentes', y='causa_acidente',
-                orientation='h', title="Principais Causas",
-                color='causa_acidente', color_discrete_sequence=rocket_palette
-            )
-            fig_causas.update_layout(yaxis={'categoryorder': 'total ascending'})
-            st.plotly_chart(fig_causas, use_container_width=True)
-        else:
-            st.warning("Coluna 'causa_acidente' não encontrada.")
+    # Verifica se há dados válidos de latitude/longitude
+    if "latitude" in df.columns and "longitude" in df.columns:
+        # Filtra apenas linhas com coordenadas válidas
+        df_mapa = df[
+            (df["latitude"].notna()) &
+            (df["longitude"].notna()) &
+            (df["latitude"] != 0) &
+            (df["longitude"] != 0)
+        ].copy()
 
-    with col2:
-        st.subheader("Top 10 Municípios com Mais Acidentes")
-        municipios = controller.get_dados_agrupados(df, 'municipio', top_n=10)
-        if not municipios.empty:
-            fig_municipios = px.bar(
-                municipios, x='total_acidentes', y='municipio',
-                orientation='h', title="Municípios com Mais Acidentes",
-                color='municipio', color_discrete_sequence=rocket_palette
+        if not df_mapa.empty:
+            mapa = px.scatter_mapbox(
+                df_mapa,
+                lat="latitude",
+                lon="longitude",
+                hover_name="municipio" if "municipio" in df_mapa.columns else None,
+                hover_data={
+                    "mortos": True if "mortos" in df_mapa.columns else False,
+                    "feridos_graves": True if "feridos_graves" in df_mapa.columns else False,
+                    "veiculos": True if "veiculos" in df_mapa.columns else False
+                },
+                zoom=4,
+                height=500,
+                color_discrete_sequence=["#590B7E"],
+                title=f"Mapa de Acidentes e Pontos de Ocorrência ({ano})"
             )
-            fig_municipios.update_layout(yaxis={'categoryorder': 'total ascending'})
-            st.plotly_chart(fig_municipios, use_container_width=True)
+            mapa.update_layout(mapbox_style="open-street-map")
+            st.plotly_chart(mapa, use_container_width=True)
         else:
-            st.warning("Coluna 'municipio' não encontrada.")
+            st.warning(
+                f"❌ Nenhuma coordenada válida encontrada. Total de registros com dados de localização: {len(df_mapa)} / {len(df)}")
+    else:
+        st.warning(
+            "⚠️ O arquivo não contém colunas de latitude/longitude para gerar o mapa.")
+        st.info("Colunas disponíveis no DataFrame:", df.columns.tolist())
+
+    st.markdown("---")
+    st.header("Distribuição de Veículos Envolvidos nos Acidentes")
+
+    if "veiculos" in df.columns:
+        veiculos_count = df["veiculos"].value_counts().reset_index()
+        veiculos_count.columns = ["Quantidade de Veículos", "Total"]
+
+        fig_pizza = px.pie(
+            veiculos_count,
+            names="Quantidade de Veículos",
+            values="Total",
+            title=f"Quantidade de Acidentes por Número de Veículos Envolvidos ({ano})",
+            color_discrete_sequence=rocket_palette['discrete']
+        )
+
+        st.plotly_chart(fig_pizza, use_container_width=True)
+    else:
+        st.warning("A coluna 'veiculos' não foi encontrada.")
