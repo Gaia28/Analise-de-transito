@@ -1,0 +1,13 @@
+# .streamlit/config.toml
+[theme]
+base="auto"
+primaryColor="#501199ff"  # tom de roxo para botões e destaques
+backgroundColor="#F7F7F7" # fundo claro (modo claro)
+secondaryBackgroundColor="#CECECE"  # fundo de caixas (modo claro)
+textColor="#1C1C1C"  # texto padrão (modo claro)
+
+[theme.dark]
+primaryColor="#5814a7ff"  # tom de roxo mais vibrante no escuro
+backgroundColor="#0e0e10"  # fundo escuro
+secondaryBackgroundColor="#1c1c1f"  # fundo de caixas no escuro
+textColor="#ffffff"  # texto branco
