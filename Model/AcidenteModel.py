@@ -2,16 +2,16 @@ import sqlite3
 import pandas as pd
 import os
 
-
 class AcidenteModel:
     def __init__(self, db_path):
-
+       
         db_dir = os.path.dirname(db_path)
         if db_dir:
             os.makedirs(db_dir, exist_ok=True)
 
         self.conn = sqlite3.connect(db_path)
         self.create_table()
+
 
     def create_table(self):
         query = """
@@ -54,28 +54,10 @@ class AcidenteModel:
     def inserir_dados(self, df: pd.DataFrame):
         df.to_sql("acidentes", self.conn, if_exists="replace", index=False)
 
+
     def listar_acidentes(self):
         return pd.read_sql("SELECT * FROM acidentes", self.conn)
 
     def listar_por_uf(self, uf="PA"):
         query = f"SELECT * FROM acidentes WHERE uf = ?"
         return pd.read_sql(query, self.conn, params=(uf,))
-
-    def listar_municipios(self):
-        # Retorna apenas municípios do Pará (assumindo que a coluna 'uf' existe)
-        query = "SELECT DISTINCT municipio FROM acidentes WHERE uf = 'PA' ORDER BY municipio ASC"
-        df = pd.read_sql(query, self.conn)
-        return df["municipio"].dropna().tolist()
-
-    def listar_por_municipio(self, municipio: str):
-        query = """
-            SELECT 
-                municipio,
-                COUNT(*) as total_acidentes,
-                SUM(feridos) as total_feridos,
-                SUM(mortos) as total_mortos
-            FROM acidentes
-            WHERE municipio = ?
-            GROUP BY municipio
-        """
-        return pd.read_sql(query, self.conn, params=(municipio,))

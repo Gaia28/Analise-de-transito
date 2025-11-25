@@ -1,8 +1,12 @@
 import pandas as pd
 import re
 import os
+<<<<<<< HEAD
 from Model.AcidenteModel import AcidenteModel
 
+=======
+from model.AcidenteModel import AcidenteModel
+>>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
 
 class AcidenteController:
     def __init__(self):
@@ -19,8 +23,12 @@ class AcidenteController:
         try:
             ano = self.extrair_ano_do_nome(arquivo.name)
             if not ano:
+<<<<<<< HEAD
                 raise Exception(
                     f"Nome de arquivo inválido. O nome '{arquivo.name}' deve conter um ano com 4 dígitos.")
+=======
+                raise Exception(f"Nome de arquivo inválido. O nome '{arquivo.name}' deve conter um ano com 4 dígitos.")
+>>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
 
             db_path = f"data/acidentes_{ano}.db"
             model = AcidenteModel(db_path=db_path)
@@ -30,12 +38,19 @@ class AcidenteController:
             else:
                 df = pd.read_excel(arquivo)
 
+<<<<<<< HEAD
             df.columns = [re.sub(r"\s+", "_", str(c).strip().lower())
                           for c in df.columns]
 
             if "uf" not in df.columns:
                 raise Exception(
                     f"A coluna 'uf' é obrigatória e não foi encontrada.")
+=======
+            df.columns = [re.sub(r"\s+", "_", str(c).strip().lower()) for c in df.columns]
+
+            if "uf" not in df.columns:
+                raise Exception(f"A coluna 'uf' é obrigatória e não foi encontrada.")
+>>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
 
             df_pa = df[df["uf"].str.upper() == "PA"]
 
@@ -51,12 +66,17 @@ class AcidenteController:
         data_dir = "data"
         if not os.path.exists(data_dir):
             return []
+<<<<<<< HEAD
         files = [f for f in os.listdir(data_dir) if f.endswith(
             ".db") or f.endswith(".csv")]
+=======
+        files = [f for f in os.listdir(data_dir) if f.endswith(".db")]
+>>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
         return sorted(files)
 
     def listar_dados_por_banco(self, nome_banco):
         db_path = f"data/{nome_banco}"
+<<<<<<< HEAD
 
         if not os.path.exists(db_path):
             return pd.DataFrame()
@@ -181,11 +201,21 @@ class AcidenteController:
             df = df[df["latitude"].notna() & df["longitude"].notna()]
 
         return df
+=======
+        if not os.path.exists(db_path):
+            return pd.DataFrame()
+        model = AcidenteModel(db_path)
+        return model.listar_por_uf("PA")
+>>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
 
     def get_dados_agrupados(self, df, coluna, top_n=10):
         if coluna not in df.columns:
             return pd.DataFrame()
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
         dados = df[coluna].value_counts().nlargest(top_n).reset_index()
         dados.columns = [coluna, 'total_acidentes']
         return dados
@@ -196,13 +226,18 @@ class AcidenteController:
                 "total_acidentes": 0, "total_mortos": 0,
                 "total_feridos_graves": 0, "total_veiculos": 0
             }
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a
         metricas = {
             "total_acidentes": len(df),
             "total_mortos": df['mortos'].sum(),
             "total_feridos_graves": df['feridos_graves'].sum(),
             "total_veiculos": df['veiculos'].sum()
         }
+<<<<<<< HEAD
         return metricas
 
     def listar_municipios(self, nome_banco):
@@ -230,3 +265,6 @@ class AcidenteController:
         """
 
         return pd.read_sql(query, model.conn, params=(municipio,))
+=======
+        return metricas
+>>>>>>> abb12b43783c3da99279a28a2bddc1b6e8c3cc3a

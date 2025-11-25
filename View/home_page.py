@@ -1,6 +1,5 @@
 import streamlit as st
 
-
 def render():
     st.header("👥 Cliente e Contexto")
     st.subheader(

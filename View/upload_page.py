@@ -2,13 +2,13 @@ import streamlit as st
 import os
 
 def render(controller):
-    st.header("Área de Análise e Carregamento de Dados")
+    st.title("📊 Área de Análise e Carregamento de Dados")
     st.markdown(
         """
         Aqui está disponivel a geração de relatórios. Siga os passos abaixo para fazer sua análise:
         """
     )
-    with st.expander("Como funciona?"):
+    with st.expander(" Como funciona?"):
         st.info(
             """
                 1.  **Carregue os Dados:** Nesta tela, você poderá carregar até 3 planilhas
