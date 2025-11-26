@@ -1,5 +1,5 @@
-from view import home_page, upload_page, dashboard_page, municipio_page, classificacao_page, periodo_page
-from view.components.sidebar import render_sidebar
+from View import home_page, upload_page, dashboard_page, municipio_page, classificacao_page, periodo_page
+from View.components.sidebar import render_sidebar
 import streamlit as st
 from controller.AcidenteController import AcidenteController
 import os

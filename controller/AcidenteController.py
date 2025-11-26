@@ -2,7 +2,7 @@ import pandas as pd
 import re
 import os
 import logging
-from model.AcidenteModel import AcidenteModel
+from Model.AcidenteModel import AcidenteModel
 
 
 class AcidenteController:
