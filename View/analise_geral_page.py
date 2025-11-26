@@ -1,25 +1,16 @@
 import streamlit as st
 import plotly.express as px
-import plotly.graph_objects as go
 import pandas as pd
 
 
 def render(controller, rocket_palette):
-    """
-    Página de Análise Geral que consolida dados de todos os anos/arquivos SQLite.
-    
-    Args:
-        controller: Instância do AcidenteController
-        rocket_palette: Dicionário com paletas de cores
-    """
-    
+
     st.header("🌍 Análise Geral - Todos os Anos")
     st.write(
         "Esta seção apresenta uma visão consolidada de todos os arquivos de dados carregados, "
         "abrangendo múltiplos anos de acidentes de trânsito no estado do Pará."
     )
 
-    # Carrega dados consolidados
     df_geral = controller.listar_dados_consolidados_todos_anos()
 
     if df_geral.empty:
@@ -29,12 +20,10 @@ def render(controller, rocket_palette):
         )
         return
 
-    # ========== MÉTRICAS GERAIS ==========
     st.header("📊 Métricas Consolidadas")
     
-    # Calcula métricas para cada ano
     metricas_por_ano = df_geral.groupby("ano").agg({
-        "data_inversa": "count",  # Total de acidentes (usamos qualquer coluna não-nula)
+        "data_inversa": "count",
         "mortos": "sum",
         "feridos_graves": "sum",
         "veiculos": "sum",
@@ -42,7 +31,6 @@ def render(controller, rocket_palette):
         "feridos": "sum"
     }).rename(columns={"data_inversa": "total_acidentes"}).reset_index()
 
-    # Calcula totais gerais
     total_acidentes = len(df_geral)
     total_mortos = df_geral["mortos"].sum() if "mortos" in df_geral.columns else 0
     total_feridos_graves = df_geral["feridos_graves"].sum() if "feridos_graves" in df_geral.columns else 0
@@ -60,10 +48,8 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    # ========== COMPARAÇÃO POR ANO ==========
     st.header("📈 Evolução Temporal - Comparação por Ano")
 
-    # Gráfico de linha: evolução dos acidentes por ano
     fig_linha = px.line(
         metricas_por_ano,
         x="ano",
@@ -77,7 +63,6 @@ def render(controller, rocket_palette):
     fig_linha.update_traces(textposition="top center")
     st.plotly_chart(fig_linha, use_container_width=True)
 
-    # Gráfico de barras agrupadas: comparação de métricas por ano
     dados_comparacao = metricas_por_ano[["ano", "total_acidentes", "mortos", "feridos_graves"]].copy()
     dados_comparacao = dados_comparacao.rename(columns={
         "total_acidentes": "Acidentes",
@@ -99,7 +84,6 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    # ========== TOP MUNICÍPIOS ==========
     st.header("🏙️ Top Municípios com Maior Número de Acidentes")
 
     if "municipio" in df_geral.columns:
@@ -122,7 +106,6 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    # ========== MAPA CONSOLIDADO ==========
     st.header("🗺️ Localização dos Acidentes - Mapa Geral")
 
     if "latitude" in df_geral.columns and "longitude" in df_geral.columns:
@@ -162,7 +145,6 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    # ========== ANÁLISE POR CAUSA DE ACIDENTE ==========
     st.header("🚨 Causas de Acidentes - Consolidado")
 
     if "causa_acidente" in df_geral.columns:
@@ -184,7 +166,6 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    # ========== ANÁLISE POR TIPO DE ACIDENTE ==========
     st.header("🔍 Tipos de Acidentes - Consolidado")
 
     if "tipo_acidente" in df_geral.columns:
@@ -202,7 +183,5 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    # ========== TABELA DE DADOS ==========
     st.header("📋 Resumo por Ano")
     st.dataframe(metricas_por_ano, use_container_width=True)
-

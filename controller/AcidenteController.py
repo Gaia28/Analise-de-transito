@@ -10,7 +10,6 @@ class AcidenteController:
         pass
 
     def extrair_ano_do_nome(self, nome_arquivo):
-        """Usa regex para encontrar um ano de 4 dígitos no nome do arquivo."""
         match = re.search(r'\d{4}', nome_arquivo)
         if match:
             return match.group(0)
@@ -68,16 +67,13 @@ class AcidenteController:
             df = model.listar_por_uf("PA")
             return self._limpar_coordenadas(df)
 
-        # Se for CSV → usa pandas direto
         if nome_banco.endswith(".csv"):
             try:
-                # tenta primeiro separador ponto-e-vírgula, depois vírgula
                 try:
                     df = pd.read_csv(db_path, sep=";", encoding="latin1")
                 except Exception:
                     df = pd.read_csv(db_path, sep=",", encoding="latin1")
 
-                # normaliza nomes de colunas
                 df.columns = [re.sub(r"\s+", "_", str(c).strip().lower())
                               for c in df.columns]
 
@@ -90,11 +86,9 @@ class AcidenteController:
                     else:
                         df[num_col] = 0
 
-                # filtra somente PA se existir coluna uf
                 if "uf" in df.columns:
                     df = df[df["uf"].str.upper() == "PA"]
 
-                # limpeza de coordenadas após filtragem
                 df = self._limpar_coordenadas(df)
                 return df
             except Exception as e:
@@ -104,23 +98,18 @@ class AcidenteController:
         return pd.DataFrame()
 
     def _limpar_coordenadas(self, df):
-        """Limpa e valida latitude/longitude do DataFrame"""
 
         def _clean_numeric_string(val):
-            """Converte string com vírgula ou ponto em float válido"""
             if pd.isna(val) or val == "":
                 return None
             s = str(val).strip()
-            # substitui vírgula decimal por ponto
             s = s.replace(",", ".")
-            # tenta encontrar o primeiro número float válido na string
             m = re.search(r'-?\d+\.\d+', s)
             if m:
                 try:
                     return float(m.group(0))
                 except:
                     return None
-            # caso não encontre float com ponto, tenta inteiro
             m2 = re.search(r'-?\d+', s)
             if m2:
                 try:
@@ -129,23 +118,21 @@ class AcidenteController:
                     return None
             return None
 
-        # Procura colunas de coordenadas com nomes variados
         lat_cols = [c for c in df.columns if 'lat' in c.lower()]
         lon_cols = [c for c in df.columns if 'lon' in c.lower()
                     or 'long' in c.lower()]
 
-        # Se encontrou colunas de latitude/longitude, limpa-as
         if lat_cols:
             for col in lat_cols:
                 df[col] = df[col].apply(_clean_numeric_string)
-                df = df[df[col].notna()]  # Remove linhas com lat inválida
-                df = df[(df[col] >= -90) & (df[col] <= 90)]  # Valida range
+                df = df[df[col].notna()]
+                df = df[(df[col] >= -90) & (df[col] <= 90)]
 
         if lon_cols:
             for col in lon_cols:
                 df[col] = df[col].apply(_clean_numeric_string)
-                df = df[df[col].notna()]  
-                df = df[(df[col] >= -180) & (df[col] <= 180)]  
+                df = df[df[col].notna()]
+                df = df[(df[col] >= -180) & (df[col] <= 180)]
 
         if lat_cols and lat_cols[0] not in ['latitude']:
             df.rename(columns={lat_cols[0]: 'latitude'}, inplace=True)
@@ -228,11 +215,6 @@ class AcidenteController:
         return pd.read_sql(query, model.conn, params=(municipio,))
 
     def listar_dados_consolidados_todos_anos(self):
-        """
-        Consolida dados de TODOS os arquivos .db na pasta data/
-        Retorna um DataFrame com os dados de todos os anos combinados,
-        adicionando uma coluna 'ano' para identificar a origem.
-        """
         data_dir = "data"
         if not os.path.exists(data_dir):
             return pd.DataFrame()
