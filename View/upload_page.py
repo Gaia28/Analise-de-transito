@@ -2,7 +2,7 @@ import streamlit as st
 import os
 
 def render(controller):
-    st.title("📊 Área de Análise e Carregamento de Dados")
+    st.header(" Área de Análise e Carregamento de Dados")
     st.markdown(
         """
         Aqui está disponivel a geração de relatórios. Siga os passos abaixo para fazer sua análise:
