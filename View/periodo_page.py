@@ -96,24 +96,4 @@ def render(df, ano, rocket_palette):
         st.warning(
             "Colunas 'condicao_metereologica' ou 'horario' não encontradas para análise meteorológica.")
 
-    def grafico_condicao_meteorologica_area(df):
-        df["hora"] = df["horario"].str.slice(0, 2)
-
-        cond_horario = df.groupby(
-            ["hora", "condicao_metereologica"]).size().reset_index(name="total")
-
-        fig = px.bar(
-            cond_horario,
-            x="hora",
-            y="total",
-            color="condicao_metereologica",
-            title=f"Condição Meteorológica ao Longo do Dia ({ano})",
-            template="plotly_dark",
-            color_discrete_sequence=rocket_palette['discrete']
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    if 'condicao_metereologica' in df.columns and 'horario' in df.columns:
-        grafico_condicao_meteorologica_area(df)
-    else:
-        st.warning(
-            "Colunas 'condicao_metereologica' ou 'horario' não encontradas para análise meteorológica.")
+   
