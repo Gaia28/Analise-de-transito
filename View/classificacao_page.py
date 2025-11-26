@@ -67,6 +67,18 @@ def render(df, ano, rocket_palette, controller):
         else:
             st.warning("Coluna 'tipo_pista' não encontrada no arquivo.")
 
+    nova_palette = [
+        "#CA6BDD",
+        "#C563EC",
+        "#8D4CAF",
+        "#703A96",
+        "#662BA1",
+        "#5819AA",
+        "#5514B6",
+        "#45119E",
+        "#2D0A77",
+        "#210658",
+    ]
     col_esq, col_central, col_dir = st.columns([0.5, 5, 0.5])
     with col_central:
         if 'causa_acidente' in df.columns:
@@ -75,11 +87,28 @@ def render(df, ano, rocket_palette, controller):
             causa_acidente.columns = ['Causa do Acidente', 'Número de Casos']
 
             fig = px.treemap(
-                causa_acidente, path=['Causa do Acidente'], values='Número de Casos',
-                color='Número de Casos', color_continuous_scale=rocket_palette['continuous'],
-                title=f'Causas de Acidentes no Pará ({ano})'
+                causa_acidente,
+                path=['Causa do Acidente'],
+                values='Número de Casos',
+                color='Número de Casos',
+                color_continuous_scale=nova_palette,
+                hover_data={'Número de Casos': ':,.0f'},
+                maxdepth=1
             )
-            fig.update_layout(template='plotly_dark')
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            st.warning("Coluna 'causa_acidente' não encontrada no arquivo.")
+
+        fig.update_traces(
+            texttemplate='<b>%{label}</b><br>%{value:,}',
+            textfont=dict(size=13),
+            marker=dict(
+                line=dict(width=0.4, color="#A247EC")  # borda mais clara
+            ),
+        )
+
+        fig.update_layout(
+            title=f'Causas de Acidentes no Pará ({ano})',
+            template='plotly_dark',
+            margin=dict(t=0, l=0, r=0, b=0.3),
+            height=450
+        )
+
+    st.plotly_chart(fig, use_container_width=True)

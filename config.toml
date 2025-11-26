@@ -2,8 +2,8 @@
 [theme]
 base="auto"
 primaryColor="#501199ff"  # tom de roxo para botões e destaques
-backgroundColor="#F7F7F7" # fundo claro (modo claro)
-secondaryBackgroundColor="#CECECE"  # fundo de caixas (modo claro)
+backgroundColor="#d7d6e6ff" # fundo claro (modo claro)
+secondaryBackgroundColor="#8e8e99ff"  # fundo de caixas (modo claro)
 textColor="#1C1C1C"  # texto padrão (modo claro)
 
 [theme.dark]

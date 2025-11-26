@@ -58,13 +58,7 @@ def render(df, ano, rocket_palette, controller=None):
         if municipio_selecionado:
             nome_banco = st.session_state.get('nome_banco_selecionado')
 
-    # Inicializa variáveis de resumo para garantir que existam sempre
-    total_acidentes = 0
-    total_mortos = 0
-    total_feridos_graves = 0
-    total_veiculos = 0
-
-    # Se tivermos controller e nome_banco, obter métricas direto do DB
+    # Se tivermos controller e nome_banco, obter métricas direto do DB (mais confiável)
     if controller is not None and nome_banco:
         try:
             resumo = controller.dados_por_municipio(
@@ -86,17 +80,33 @@ def render(df, ano, rocket_palette, controller=None):
         except Exception:
             # Se falhar, cai no fallback a seguir
             pass
-        else:
-            st.subheader(f"Resumo para {municipio_selecionado} ({ano})")
-            st.markdown(f"- Total de Acidentes: **{total_acidentes}**")
-            st.markdown(f"- Total de Feridos Graves: **{total_feridos_graves}**")
-            st.markdown(f"- Total de Mortos: **{total_mortos}**")
-            st.markdown(f"- Total de Veículos Envolvidos: **{total_veiculos}**")
-    
-    st.markdown("---")
-    st.subheader(f"Análise Detalhada para {municipio_selecionado} ({ano})")
 
-    st.write("Comparação Geral do Município")
+    # Fallback: calcula a partir do DataFrame passado
+    if 'municipio' in df.columns:
+        df_municipio = df[df['municipio'] == municipio_selecionado]
+        total_acidentes = len(df_municipio)
+        total_feridos_graves = df_municipio['feridos_graves'].sum(
+        ) if 'feridos_graves' in df_municipio.columns else 0
+        total_mortos = df_municipio['mortos'].sum(
+        ) if 'mortos' in df_municipio.columns else 0
+        total_veiculos = df_municipio['veiculos'].sum(
+        ) if 'veiculos' in df_municipio.columns else 0
+    else:
+        total_acidentes = 0
+        total_feridos_graves = 0
+        total_mortos = 0
+        total_veiculos = 0
+
+    if municipio_selecionado:
+        st.write(
+            f"Estatísticas para o município de **{municipio_selecionado}** no ano de **{ano}**:")
+        st.markdown(f"- Total de Acidentes: **{total_acidentes}**")
+        st.markdown(f"- Total de Mortos: **{total_mortos}**")
+        st.markdown(f"- Total de Feridos Graves: **{total_feridos_graves}**")
+        st.markdown(f"- Total de Veículos Envolvidos: **{total_veiculos}**")
+
+        # Gráfico Radar Comparativo
+    st.write(f"Comparação Geral do Município de {municipio_selecionado}")
 
     df_radar = pd.DataFrame({
         "categoria": ["Acidentes", "Mortes", "Feridos Graves", "Veículos"],
@@ -116,3 +126,48 @@ def render(df, ano, rocket_palette, controller=None):
     fig_radar.update_traces(fill="toself", opacity=0.7)
 
     st.plotly_chart(fig_radar, use_container_width=True)
+
+    if 'data_inversa' in df.columns:
+        try:
+            df_municipio = df[df['municipio'] == municipio_selecionado].copy()
+            df_municipio['data_inversa'] = pd.to_datetime(
+                df_municipio['data_inversa'])
+            df_municipio['mes'] = df_municipio['data_inversa'].dt.month
+
+            acidentes_por_mes = df_municipio.groupby(
+                'mes').size().reset_index(name='Total de Acidentes')
+
+            meses_pt = {
+                1: "Jan", 2: "Fev", 3: "Mar", 4: "Abr", 5: "Mai", 6: "Jun",
+                7: "Jul", 8: "Ago", 9: "Set", 10: "Out", 11: "Nov", 12: "Dez"
+            }
+            acidentes_por_mes = acidentes_por_mes.set_index(
+                'mes').reindex(range(1, 13)).reset_index()
+            acidentes_por_mes['Mês'] = acidentes_por_mes['mes'].map(meses_pt)
+            acidentes_por_mes = acidentes_por_mes.fillna(0)
+
+            fig_mes = px.line(acidentes_por_mes, x='Mês', y='Total de Acidentes',
+                              title=f"Acidentes por Mês em {municipio_selecionado} ({ano})", markers=True,
+                              labels={
+                                  'Mês': 'Mês', 'Total de Acidentes': 'Total de Acidentes'},
+                              color_discrete_sequence=["#590B7E"])
+            fig_mes.update_layout(template='plotly_dark')
+            st.plotly_chart(fig_mes, use_container_width=True)
+        except Exception as e:
+            st.error(
+                f"Erro ao analisar data_inversa para {municipio_selecionado}: {e}")
+    else:
+        st.warning("Coluna 'data_inversa' não encontrada para análise por mês.")
+
+    if 'tipo_acidente' in df.columns:
+        df_municipio = df[df['municipio'] == municipio_selecionado]
+        tipo = df_municipio['tipo_acidente'].value_counts().reset_index()
+        tipo.columns = ['Tipo de Acidente', 'Número de Acidentes']
+        tipo = tipo.sort_values(by='Número de Acidentes', ascending=False)
+        fig_tipo = px.bar(
+            tipo, x='Tipo de Acidente', y='Número de Acidentes',
+            title=f"Tipos de Acidentes em {municipio_selecionado} ({ano})",
+            color='Tipo de Acidente', color_discrete_sequence=rocket_palette['discrete']
+        )
+        fig_tipo.update_layout(template='plotly_dark')
+        st.plotly_chart(fig_tipo)

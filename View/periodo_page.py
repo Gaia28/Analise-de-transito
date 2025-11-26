@@ -6,23 +6,15 @@ import pandas as pd
 def render(df, ano, rocket_palette):
     st.header("Análise de Acidentes por Período")
 
-    # Compatibilidade: rocket_palette pode ser lista (versão antiga) ou dict com 'discrete'/'continuous'
-    if isinstance(rocket_palette, dict):
-        palette_discrete = rocket_palette.get('discrete', [])
-        palette_continuous = rocket_palette.get('continuous', palette_discrete)
-    else:
-        palette_discrete = rocket_palette
-        palette_continuous = rocket_palette
-
     if df.empty:
         st.warning(
             "Não há dados para exibir. Selecione um ano na barra lateral ou carregue dados primeiro.")
         return
 
     st.write(
-        f"Esta seção apresenta uma análise dos acidentes de trânsito no Pará para o ano de {ano}, categorizados por diferentes períodos.")
+        f"Esta seção apresenta uma análise dos acidentes de trânsito no Pará para o ano de {ano}, categorizados pelo decorrer do tempo.")
 
-    st.subheader(f"Acidentes por Mês ({ano})")
+    st.subheader("Distribuição de Acidentes por tipo de intervalo")
     if 'data_inversa' in df.columns:
         try:
             df_periodo = df.copy()
@@ -43,7 +35,7 @@ def render(df, ano, rocket_palette):
             acidentes_por_mes = acidentes_por_mes.fillna(0)
 
             fig_mes = px.line(acidentes_por_mes, x='Mês', y='Total de Acidentes',
-                              title=f"Acidentes por Mês ({ano})", markers=True,
+                              title=f"Decorrência de Acidentes por Mês ({ano})", markers=True,
                               labels={
                                   'Mês': 'Mês', 'Total de Acidentes': 'Total de Acidentes'},
                               color_discrete_sequence=["#590B7E"])
@@ -54,7 +46,6 @@ def render(df, ano, rocket_palette):
     else:
         st.warning("Coluna 'data_inversa' não encontrada para análise por mês.")
 
-    st.subheader(f"Acidentes por Dia da Semana ({ano})")
     if 'dia_semana' in df.columns:
         dias_ordem = ['segunda-feira', 'terça-feira', 'quarta-feira',
                       'quinta-feira', 'sexta-feira', 'sábado', 'domingo']
@@ -72,8 +63,8 @@ def render(df, ano, rocket_palette):
         fig_dia = px.bar(
             acidentes_por_dia.dropna(),
             x='Dia da Semana', y='Total de Acidentes',
-            title=f"Acidentes por Dia da Semana ({ano})",
-            color='Dia da Semana', color_discrete_sequence=palette_discrete,
+            title=f" Decorrência de Acidentes por Dia da Semana ({ano})",
+            color='Dia da Semana', color_discrete_sequence=rocket_palette['discrete'],
             category_orders={'Dia da Semana': list(dias_pt.values())}
         )
         fig_dia.update_layout(template='plotly_dark')
@@ -81,3 +72,48 @@ def render(df, ano, rocket_palette):
     else:
         st.warning(
             "Coluna 'dia_semana' não encontrada para análise por dia da semana.")
+
+    def grafico_condicao_meteorologica_area(df):
+        df["hora"] = df["horario"].str.slice(0, 2)
+
+        cond_horario = df.groupby(
+            ["hora", "condicao_metereologica"]).size().reset_index(name="total")
+
+        fig = px.area(
+            cond_horario,
+            x="hora",
+            y="total",
+            color="condicao_metereologica",
+            title=f"Condição Meteorológica ao Longo do Dia ({ano})",
+            template="plotly_dark",
+            color_discrete_sequence=rocket_palette['discrete']
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+    if 'condicao_metereologica' in df.columns and 'horario' in df.columns:
+        grafico_condicao_meteorologica_area(df)
+    else:
+        st.warning(
+            "Colunas 'condicao_metereologica' ou 'horario' não encontradas para análise meteorológica.")
+
+    def grafico_condicao_meteorologica_area(df):
+        df["hora"] = df["horario"].str.slice(0, 2)
+
+        cond_horario = df.groupby(
+            ["hora", "condicao_metereologica"]).size().reset_index(name="total")
+
+        fig = px.bar(
+            cond_horario,
+            x="hora",
+            y="total",
+            color="condicao_metereologica",
+            title=f"Condição Meteorológica ao Longo do Dia ({ano})",
+            template="plotly_dark",
+            color_discrete_sequence=rocket_palette['discrete']
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    if 'condicao_metereologica' in df.columns and 'horario' in df.columns:
+        grafico_condicao_meteorologica_area(df)
+    else:
+        st.warning(
+            "Colunas 'condicao_metereologica' ou 'horario' não encontradas para análise meteorológica.")
