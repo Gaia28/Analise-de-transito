@@ -81,7 +81,6 @@ class AcidenteController:
                 df.columns = [re.sub(r"\s+", "_", str(c).strip().lower())
                               for c in df.columns]
 
-                # garante presença de colunas numéricas chave com conversão segura
                 def _to_int_series(series):
                     return pd.to_numeric(series.astype(str).str.replace(",", ".").str.replace(" ", ""), errors="coerce").fillna(0).astype(int)
 
@@ -145,16 +144,14 @@ class AcidenteController:
         if lon_cols:
             for col in lon_cols:
                 df[col] = df[col].apply(_clean_numeric_string)
-                df = df[df[col].notna()]  # Remove linhas com lon inválida
-                df = df[(df[col] >= -180) & (df[col] <= 180)]  # Valida range
+                df = df[df[col].notna()]  
+                df = df[(df[col] >= -180) & (df[col] <= 180)]  
 
-        # Padroniza nomes para 'latitude' e 'longitude' se encontrou
         if lat_cols and lat_cols[0] not in ['latitude']:
             df.rename(columns={lat_cols[0]: 'latitude'}, inplace=True)
         if lon_cols and lon_cols[0] not in ['longitude']:
             df.rename(columns={lon_cols[0]: 'longitude'}, inplace=True)
 
-        # Se tiver coluna "coords" com formato "-8.123,-49.456", extrai para lat/lon
         if "coords" in df.columns and ("latitude" not in df.columns or "longitude" not in df.columns):
             def _extract_lat_lon(s):
                 if pd.isna(s) or s == "":
@@ -177,7 +174,6 @@ class AcidenteController:
             df["latitude"] = latitudes
             df["longitude"] = longitudes
 
-            # Remove linhas com coords inválidas
             df = df[df["latitude"].notna() & df["longitude"].notna()]
 
         return df
@@ -209,7 +205,6 @@ class AcidenteController:
         db_path = f"data/{nome_banco}"
         model = AcidenteModel(db_path)
 
-        # Garantir que retornamos apenas municípios do Pará (uf = 'PA')
         query = "SELECT DISTINCT municipio FROM acidentes WHERE uf = 'PA' ORDER BY municipio ASC"
         df = pd.read_sql(query, model.conn)
         return df["municipio"].dropna().tolist()
@@ -231,3 +226,43 @@ class AcidenteController:
         """
 
         return pd.read_sql(query, model.conn, params=(municipio,))
+
+    def listar_dados_consolidados_todos_anos(self):
+        """
+        Consolida dados de TODOS os arquivos .db na pasta data/
+        Retorna um DataFrame com os dados de todos os anos combinados,
+        adicionando uma coluna 'ano' para identificar a origem.
+        """
+        data_dir = "data"
+        if not os.path.exists(data_dir):
+            return pd.DataFrame()
+
+        db_files = [f for f in os.listdir(data_dir) if f.endswith(".db")]
+        
+        if not db_files:
+            return pd.DataFrame()
+
+        dfs = []
+        for db_file in sorted(db_files):
+            try:
+                db_path = f"{data_dir}/{db_file}"
+                model = AcidenteModel(db_path)
+                df = model.listar_por_uf("PA")
+                
+                if not df.empty:
+                    ano = self.extrair_ano_do_nome(db_file)
+                    df["ano"] = ano if ano else "Desconhecido"
+                    dfs.append(df)
+            except Exception as e:
+                logging.warning(f"Erro ao carregar {db_file}: {e}")
+                continue
+
+        if not dfs:
+            return pd.DataFrame()
+
+        df_consolidado = pd.concat(dfs, ignore_index=True)
+        
+        df_consolidado = self._limpar_coordenadas(df_consolidado)
+        
+        return df_consolidado
+

@@ -1,4 +1,4 @@
-from View import home_page, upload_page, dashboard_page, municipio_page, classificacao_page, periodo_page
+from View import home_page, upload_page, dashboard_page, municipio_page, classificacao_page, periodo_page, analise_geral_page
 from View.components.sidebar import render_sidebar
 import streamlit as st
 from controller.AcidenteController import AcidenteController
@@ -32,3 +32,7 @@ elif selected_page == "Classificações":
 
 elif selected_page == "Período":
     periodo_page.render(df, ano, palette)
+
+elif selected_page == "Análise Geral":
+    analise_geral_page.render(controller, palette)
+

@@ -45,9 +45,9 @@ def render_sidebar():
         selected_page = option_menu(
             menu_title="Projeto Big Data",
             options=["Home", "Análise de dados", "Visualização de Dados",
-                     "Acidentes por município", "Classificações", "Período"],
+                     "Acidentes por município", "Classificações", "Período", "Análise Geral"],
             icons=["house", "cloud-upload",
-                   "bar-chart", "map", "list", "calendar"],
+                   "bar-chart", "map", "list", "calendar", "globe"],
             menu_icon="cast",
             default_index=0,
             styles=styles
