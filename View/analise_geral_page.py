@@ -5,7 +5,7 @@ import pandas as pd
 
 def render(controller, rocket_palette):
 
-    st.header("🌍 Análise Geral - Todos os Anos")
+    st.header("Análise Geral - Todos os Anos")
     st.write(
         "Esta seção apresenta uma visão consolidada de todos os arquivos de dados carregados, "
         "abrangendo múltiplos anos de acidentes de trânsito no estado do Pará."
@@ -20,7 +20,7 @@ def render(controller, rocket_palette):
         )
         return
 
-    st.header("📊 Métricas Consolidadas")
+    st.header("Métricas Consolidadas")
     
     metricas_por_ano = df_geral.groupby("ano").agg({
         "data_inversa": "count",
@@ -145,7 +145,7 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    st.header("🚨 Causas de Acidentes - Consolidado")
+    st.header("Causas de Acidentes - Consolidado")
 
     if "causa_acidente" in df_geral.columns:
         top_causas = df_geral["causa_acidente"].value_counts().head(10).reset_index()

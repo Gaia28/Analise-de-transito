@@ -2,7 +2,7 @@ import streamlit as st
 
 
 def render():
-    st.header("👥 Cliente e Contexto")
+    st.header("Cliente e Contexto")
     st.subheader(
         "Informações sobre o cliente, fonte de dados, ferramentas utilizadas e entre outros.")
     st.markdown("Fonte dos dados: [Dados abertos PRF](https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf)")
