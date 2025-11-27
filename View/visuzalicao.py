@@ -12,7 +12,7 @@ def tela_visualizacao():
         if st.button("➡️ Visualização de Dados"):
             st.session_state["tela"] = "visualizacao"
             st.rerun()
-    st.title("📈 Dashboard de Visualização")
+    st.title("Dashboard de Visualização")
     st.markdown("---")
     
     controller = AcidenteController()

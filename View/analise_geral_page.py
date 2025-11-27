@@ -48,7 +48,7 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    st.header("📈 Evolução Temporal - Comparação por Ano")
+    st.header("Evolução Temporal - Comparação por Ano")
 
     fig_linha = px.line(
         metricas_por_ano,
@@ -84,7 +84,7 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    st.header("🏙️ Top Municípios com Maior Número de Acidentes")
+    st.header("Top Municípios com Maior Número de Acidentes")
 
     if "municipio" in df_geral.columns:
         top_municipios = df_geral["municipio"].value_counts().head(10).reset_index()
@@ -106,7 +106,7 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    st.header("🗺️ Localização dos Acidentes - Mapa Geral")
+    st.header("Localização dos Acidentes - Mapa Geral")
 
     if "latitude" in df_geral.columns and "longitude" in df_geral.columns:
         df_mapa = df_geral[
@@ -166,7 +166,7 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    st.header("🔍 Tipos de Acidentes - Consolidado")
+    st.header("Tipos de Acidentes - Consolidado")
 
     if "tipo_acidente" in df_geral.columns:
         tipos_acidentes = df_geral["tipo_acidente"].value_counts().reset_index()
@@ -183,5 +183,5 @@ def render(controller, rocket_palette):
 
     st.markdown("---")
 
-    st.header("📋 Resumo por Ano")
+    st.header("Resumo por Ano")
     st.dataframe(metricas_por_ano, use_container_width=True)
